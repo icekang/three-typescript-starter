@@ -1,69 +1,61 @@
 // add styles
-import './style.css';
+import "./style.css";
 // three.js
-import * as THREE from 'three';
+import * as THREE from "three";
+const innerWidth = window.innerWidth;
+const innerHeight = document.documentElement.clientHeight;
+let vh = window.innerHeight * 0.01;
+document.documentElement.style.setProperty("--vh", `${vh}px`);
+// const innerHeight = ;
+var scene = new THREE.Scene();
+var camera = new THREE.PerspectiveCamera(
+  50,
+  innerWidth / innerHeight,
+  0.1,
+  1000
+);
 
-// create the scene
-const scene = new THREE.Scene();
+camera.position.z = 15;
+let cameraX = 0;
+let cameraY = 0;
+const mouseMoveNormalizer = 3500;
+camera.lookAt(cameraX, cameraY, 5);
+var renderer = new THREE.WebGLRenderer();
 
-// create the camera
-const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-
-const renderer = new THREE.WebGLRenderer();
-
-// set size
-renderer.setSize(window.innerWidth, window.innerHeight);
-
-// add canvas to dom
+renderer.setSize(innerWidth, innerHeight);
 document.body.appendChild(renderer.domElement);
 
-// add axis to the scene
-const axis = new THREE.AxesHelper(10);
+var geometry = new THREE.BoxGeometry();
+var material = new THREE.MeshBasicMaterial({ color: 0xffff00 });
+var cube = new THREE.Mesh(geometry, material);
+scene.add(cube);
 
-scene.add(axis);
-
-// add lights
-const light = new THREE.DirectionalLight(0xffffff, 1.0);
-
-light.position.set(100, 100, 100);
-
-scene.add(light);
-
-const light2 = new THREE.DirectionalLight(0xffffff, 1.0);
-
-light2.position.set(-100, 100, -100);
-
-scene.add(light2);
-
-const material = new THREE.MeshBasicMaterial({
-  color: 0xaaaaaa,
-  wireframe: true,
-});
-
-// create a box and add it to the scene
-const box = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), material);
-
-scene.add(box);
-
-box.position.x = 0.5;
-box.rotation.y = 0.5;
-
-camera.position.x = 5;
-camera.position.y = 5;
-camera.position.z = 5;
-
-camera.lookAt(scene.position);
-
-function animate(): void {
+function animate() {
   requestAnimationFrame(animate);
-  render();
-}
-
-function render(): void {
-  const timer = 0.002 * Date.now();
-  box.position.y = 0.5 + 0.5 * Math.sin(timer);
-  box.rotation.x += 0.1;
+  cube.rotation.x += 0.01;
+  cube.rotation.y += 0.01;
   renderer.render(scene, camera);
 }
-
 animate();
+
+let prevX;
+let prevY;
+const moveCamera = (ev: MouseEvent) => {
+  cameraX = cameraX + (ev.clientX - prevX) / mouseMoveNormalizer;
+  cameraY = cameraY + (prevY - ev.clientY) / mouseMoveNormalizer;
+  camera.lookAt(cameraX, cameraY, 0);
+};
+const addMouseMoveListener = (ev: MouseEvent) => {
+  prevX = ev.clientX;
+  prevY = ev.clientY;
+
+  document.body.addEventListener("mousemove", moveCamera);
+};
+const removeMouseMoveListener = (ev: MouseEvent) => {
+  document.body.removeEventListener("mousemove", moveCamera);
+};
+
+document.body.addEventListener("mousedown", addMouseMoveListener);
+document.body.addEventListener("mouseup", removeMouseMoveListener);
+
+import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
